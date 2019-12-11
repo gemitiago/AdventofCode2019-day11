@@ -129,7 +129,7 @@ const runOpCode = (instIndex, diagProg, arrayInputInst, logOutputsYN = true, rel
   }
 };
 
-const runProgram = (arrayInputInst, diagProg, isPart2 = false, instIndex = 0, relativeBase = 0) => {
+const runProgram = (arrayInputInst, diagProg, instIndex = 0, relativeBase = 0) => {
   let auxProg = [...diagProg];
   let executeOpCode = {};
   let output = null;
@@ -141,7 +141,7 @@ const runProgram = (arrayInputInst, diagProg, isPart2 = false, instIndex = 0, re
     relativeBase = executeOpCode.relativeBase;
     isWaitingInst = executeOpCode.isWaitingInst;
 
-    if (!executeOpCode.success || (isPart2 && isWaitingInst !== null)) {
+    if (!executeOpCode.success || (isWaitingInst !== null)) {
       break;
     }
 
@@ -249,26 +249,22 @@ const countPaintedPanels = (diagProg, inputIntCode = 0) => {
   let position = [0, 5];
   let instructionIndex = 0;
   let relativeBase = 0;
+  let direction = 'U';
+  let colorPanel = 0;
+  let progOutput = null;
 
-  // run program with initial input
-  let executeProg = runProgram([inputIntCode], auxProg, true);
-  let progOutput = executeProg.output;
-
-  auxProg = executeProg.prog;
-  instructionIndex = executeProg.isWaitingInst;
-  relativeBase = executeProg.relativeBase;
-  let colorPanel = progOutput[0];
-  listPaintedPanels = savePanel(position, listPaintedPanels, colorPanel);
-  let direction = calcNextDirection(progOutput[1], 'U');
-  position = nextPosition(position, direction);
-
+  let isFirstCycle = true;
   while (true) {
     // input instructions 0 if the robot is over a black panel or 1 if the robot is over a white panel.
-    colorPanel = getColorPanel(position, listPaintedPanels);
-    inputIntCode = colorPanel;
-
+    if(!isFirstCycle){
+      colorPanel = getColorPanel(position, listPaintedPanels);
+      inputIntCode = colorPanel;
+    }else{
+      isFirstCycle = false;
+    }
+    
     // run prog with specific input color
-    executeProg = runProgram([inputIntCode], auxProg, true, instructionIndex, relativeBase);
+    executeProg = runProgram([inputIntCode], auxProg, instructionIndex, relativeBase);
     progOutput = executeProg.output;
     instructionIndex = executeProg.isWaitingInst;
     relativeBase = executeProg.relativeBase;
@@ -313,7 +309,7 @@ const printRegistrationID = input => {
 };
 
 console.time('part1')
-console.log(countPaintedPanels(input, 1).count);
+console.log(countPaintedPanels(input, 0).count);
 console.timeEnd('part1')
 console.time('part2')
 console.log(printRegistrationID(input));
